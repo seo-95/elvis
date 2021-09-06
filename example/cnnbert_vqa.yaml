@@ -1,0 +1,47 @@
+MODEL:
+  NAME: 'build_meta_vqa'
+  MAX_N_VISUAL: 49
+  MAX_N_TOKENS: 20
+  LOSS_TYPE: 'BCE'
+  NET:
+    NAME: 'build_cnn_bert_model'
+    RESNET_MODEL: 'resnet50' #https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/resnet.py (resnet101d and 152d)
+    FREEZE_RESNET: True
+    PRETRAINED_BERT: 'bert-base-uncased'
+  ANS_VOCAB: 'outputs/answers_vocab/VQA.vocab'
+
+
+TRAINER:
+  HYPERPARAMS:
+    BATCH_SIZE: 4 #coco train size: 443,757
+    LR: 1.0e-04
+    GRADIENT_ACCUMULATIONS_STEPS: 1
+    WEIGHT_DECAY: 1.0e-02
+    WARMUP_STEPS: 1734 #10% of training steps (batch=256)
+    WARMUP_MULTIPLIER: 1
+    MAX_EPOCHS: 10
+    SCHEDULER_GAMMA: 0.02
+    SCHEDULER_MILESTONES: [180000, 216000]
+  GRADIENT_CLIPPING: 2.0
+  SEED: 20160207
+  WORKERS: 0 #!
+  DATASET:
+    NAME: 'build_vqa_dataset'
+    MEAN: [0.485, 0.456, 0.406] #ImageNet meand and std
+    STD: [0.229, 0.224, 0.225]
+    RESIZE: [224, 224]
+    RANDAUGMENT: [2, 9] #N,M parameters
+    ROOT: 'data/VQA'
+    IMAGES_DIR: 'images'
+    TRAIN: ['annotations/v2_OpenEnded_mscoco_train2014_questions.json', 
+            'annotations/v2_mscoco_train2014_annotations.json']
+    DEV: ['annotations/v2_OpenEnded_mscoco_val2014_questions.json',
+          'annotations/v2_mscoco_val2014_annotations.json']
+  LOGGER:
+    STDOUT: True
+    PROGRESS_BAR: True
+    FILE: True
+    TENSORBOARD: True
+  CHECKPOINT:
+    ENABLED: True
+    DIR: 'outputs/checkpoints/vqa'
